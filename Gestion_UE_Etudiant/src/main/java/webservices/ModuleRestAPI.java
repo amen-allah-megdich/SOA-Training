@@ -2,6 +2,7 @@ package webservices;
 import entities.Module;
 import metiers.ModuleBusiness;
 import entities.UniteEnseignement;
+import metiers.UniteEnseignementBusiness;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -49,21 +50,50 @@ public class ModuleRestAPI {
                     .build(); }
     }
     @Path("/type/{type}")
-    @GET
+    @PUT
     @Produces(MediaType.APPLICATION_JSON)
     public Response getModulesByType( @PathParam("type") Module.TypeModule type) {
         return Response.status(200)
                 .entity(helper.getModulesByType(type))
                 .build();
     }
-    @Path("/ue/{code}")
-    @GET
+
+    @Path("/ue/code/{code}")
+    @PUT
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getModulesByUE( @PathParam("code") int code) {
-        UniteEnseignement ue = new UniteEnseignement();
-        ue.setCode(code);
-        return Response.status(200)
+    public Response getModulesByUE(@PathParam("code") int code) {
+        UniteEnseignementBusiness ueb = new UniteEnseignementBusiness();
+        UniteEnseignement ue = ueb.getUEByCode(code);
+        if (ue == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("UE introuvable")
+                    .build();
+        }
+        return Response.status(Response.Status.OK)
                 .entity(helper.getModulesByUE(ue))
-                .build(); }
+                .build();
+    }
+    @Path("/ue/matricule/{mat}")
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getModuleByMatricule(@PathParam("mat") String mat){
+        return Response.status(201).entity(helper.getModuleByMatricule(mat)).build();
+
+    }
+    @Path("/update/{mat}")
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateModule(@PathParam("mat")String matricule, Module updatedModule){
+        if (helper.updateModule(matricule,updatedModule)) {
+            return Response.status(200)
+                    .entity("Updated successfully")
+                    .build();
+        } else {
+            return Response.status(404)
+                    .entity(" introuvable")
+                    .build();
+        }
+    }
 
 }
